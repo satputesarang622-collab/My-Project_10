@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookMyShow App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section h2 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .section h2 .selected {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .message {
+            color: #999;
+            font-style: italic;
+            padding: 10px;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #e0e0e0;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .btn.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .schedule-btn.active {
+            background: #10b981;
+        }
+
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .seat-item {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .seat-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .seat-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .seat-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .seat-btn.minus {
+            background: #ef4444;
+            color: white;
+        }
+
+        .seat-btn.minus:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .seat-btn.plus {
+            background: #10b981;
+            color: white;
+        }
+
+        .seat-btn.plus:hover {
+            background: #059669;
+            transform: scale(1.1);
+        }
+
+        .seat-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            min-width: 30px;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 40px;
+        }
+
+        .summary h2 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .summary-item b {
+            display: inline-block;
+            width: 100px;
+        }
+
+        .seats-list {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .seats-list ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .seats-list li {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .total-seats {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 BookMyShow App</h1>
+
+        <!-- Movies Section -->
+        <div class="section">
+            <h2>Select Movie: <span class="selected" id="selected-movie">None</span></h2>
+            <div class="btn-container" id="movies-container"></div>
+        </div>
+
+        <!-- Schedule Section -->
+        <div class="section">
+            <h2>Select Schedule: <span class="selected" id="selected-schedule">None</span></h2>
+            <div id="schedule-content">
+                <p class="message">Please select a movie first</p>
+            </div>
+        </div>
+
+        <!-- Seats Section -->
+        <div class="section">
+            <h2>Select Seats</h2>
+            <div id="seats-content">
+                <p class="message">Please select a schedule first</p>
+            </div>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="summary">
+            <h2>📋 Booking Summary</h2>
+            <div class="summary-item">
+                <b>Movie:</b> <span id="summary-movie">Not Selected</span>
+            </div>
+            <div class="summary-item">
+                <b>Schedule:</b> <span id="summary-schedule">Not Selected</span>
+            </div>
+            <div class="seats-list">
+                <b>Seats:</b>
+                <ul id="summary-seats"></ul>
+                <div class="total-seats">
+                    Total Seats: <span id="total-seats">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const moviesList = ["Avengers", "Inception", "Interstellar", "The Matrix", "Avatar"];
+        const slots = ["10:00 AM", "1:00 PM", "4:00 PM", "7:00 PM", "10:00 PM"];
+        const seats = ["A1", "A2", "A3", "A4", "D1", "D2"];
+
+        // State
+        let selectedMovie = "";
+        let selectedSchedule = "";
+        let selectedSeats = {};
+
+        // Initialize seats object
+        seats.forEach(seat => {
+            selectedSeats[seat] = 0;
+        });
+
+        // Render Movies
+        function renderMovies() {
+            const container = document.getElementById('movies-container');
+            container.innerHTML = moviesList.map(movie => 
+                `<button class="btn ${selectedMovie === movie ? 'active' : ''}" onclick="selectMovie('${movie}')">${movie}</button>`
+            ).join('');
+        }
+
+        // Select Movie
+        function selectMovie(movie) {
+            selectedMovie = movie;
+            document.getElementById('selected-movie').textContent = movie;
+            renderMovies();
+            renderSchedule();
+            updateSummary();
+        }
+
+        // Render Schedule
+        function renderSchedule() {
+            const container = document.getElementById('schedule-content');
+            if (!selectedMovie) {
+                container.innerHTML = '<p class="message">Please select a movie first</p>';
+                return;
+            }
+            container.innerHTML = `<div class="btn-container">${slots.map(slot => 
+                `<button class="btn schedule-btn ${selectedSchedule === slot ? 'active' : ''}" onclick="selectSchedule('${slot}')">${slot}</button>`
+            ).join('')}</div>`;
+        }
+
+        // Select Schedule
+        function selectSchedule(schedule) {
+            selectedSchedule = schedule;
+            document.getElementById('selected-schedule').textContent = schedule;
+            renderSchedule();
+            renderSeats();
+            updateSummary();
+        }
+
+        // Render Seats
+        function renderSeats() {
+            const container = document.getElementById('seats-content');
+            if (!selectedSchedule) {
+                container.innerHTML = '<p class="message">Please select a schedule first</p>';
+                return;
+            }
+            container.innerHTML = `<div class="seat-grid">${seats.map(seat => `
+                <div class="seat-item">
+                    <div class="seat-name">${seat}</div>
+                    <div class="seat-controls">
+                        <button class="seat-btn minus" onclick="changeSeat('${seat}', -1)">−</button>
+                        <span class="seat-count" id="seat-${seat}">${selectedSeats[seat]}</span>
+                        <button class="seat-btn plus" onclick="changeSeat('${seat}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('')}</div>`;
+        }
+
+        // Change Seat Count
+        function changeSeat(seat, change) {
+            selectedSeats[seat] = Math.max(0, selectedSeats[seat] + change);
+            document.getElementById(`seat-${seat}`).textContent = selectedSeats[seat];
+            updateSummary();
+        }
+
+        // Update Summary
+        function updateSummary() {
+            document.getElementById('summary-movie').textContent = selectedMovie || "Not Selected";
+            document.getElementById('summary-schedule').textContent = selectedSchedule || "Not Selected";
+            
+            const seatsList = document.getElementById('summary-seats');
+            seatsList.innerHTML = seats.map(seat => 
+                `<li>${seat}: ${selectedSeats[seat]}</li>`
+            ).join('');
+
+            const totalSeats = Object.values(selectedSeats).reduce((sum, count) => sum + count, 0);
+            document.getElementById('total-seats').textContent = totalSeats;
+        }
+
+        // Initialize
+        renderMovies();
+        renderSchedule();
+        renderSeats();
+        updateSummary();
+    </script>
+</body>
+</html>s"></script>
+</html>
